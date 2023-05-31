@@ -1,7 +1,22 @@
 {
-    "files.associations": {
-        "*.ejs": "html",
-        "*.asm": "assembly",
-        "stdio.h": "c"
-    }
+  "files.associations": {
+    "*.ejs": "html",
+    "*.asm": "assembly",
+    "*.gc": "arm",
+    "*.h": "c",
+    "*.x": "c",
+    "cstddef": "c",
+    "list": "c",
+    "string": "c",
+    "bit": "c",
+    "limits": "c",
+    "memory": "c",
+    "functional": "c",
+    "compare": "c",
+    "new": "c",
+    "*.inc": "c"
+  },
+  "terminal.integrated.env.linux": {
+    "GTK_PATH": ""
+  }
 }

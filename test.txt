@@ -1,1 +1,4 @@
-Hello world from a file!!!
+Welcome to the world of death!!! (x global variable:string)
+10 (y global varible:int)
+start (overide) (private function)
+(print) (x) (y) (start)
