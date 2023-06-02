@@ -128,17 +128,6 @@ void keyboard(Registers *regs)
     setScreenXY(0, getScreenY());
 }
 
-void scaleAndDescale(Registers *regs)
-{
-    uint8_t data = i686_inb(KEYBOARD_DATA_PORT);
-    prevSquareSize = squareSize;
-
-    if (data == SCAN_CODE_EQUAL)
-        squareSize++;
-    else if (data == SCAN_CODE_MINUS && squareSize > 1)
-        squareSize--;
-}
-
 void waitTillInput()
 {
     while (!haveInput)
