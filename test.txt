@@ -1,4 +1,66 @@
-Welcome to the world of death!!! (x global variable:string)
-10 (y global varible:int)
-start (overide) (private function)
-(print) (x) (y) (start)
+send me code to fix it
+memdefs.h:
+#pragma once
+
+// 0x00000000 - 0x000003FF - interrupt vector table
+// 0x00000400 - 0x000004FF - BIOS data area
+
+#define MEMORY_MIN 0x00000500
+#define MEMORY_MAX 0x00080000
+
+// 0x00000500 - 0x00010500 - FAT driver
+#define MEMORY_FAT_ADDR ((void *)0x20000)
+#define MEMORY_FAT_SIZE 0x00010000
+
+#define MEMORY_LOAD_KERNEL ((void *)0x30000)
+#define MEMORY_LOAD_SIZE 0x00010000
+
+// 0x00020000 - 0x00030000 - stage2
+
+#define MEMORY_VESA_INFO 0x00030000
+#define MEMORY_MODE_INFO 0x00040000
+#define MEMORY_PICKED_MODE 0x00050000
+#define MEMORY_SET_MODE 0x000500FF
+
+// 0x00030000 - 0x00080000 - free
+
+// 0x00080000 - 0x0009FFFF - Extended BIOS data area
+// 0x000A0000 - 0x000C7FFF - Video
+// 0x000C8000 - 0x000FFFFF - BIOS
+
+#define MEMORY_KERNEL_ADDR ((void *)0x100000)
+bootloader_linker.ld:
+ENTRY(entry)
+OUTPUT_FORMAT("binary")
+phys = 0x00000500;
+
+SECTIONS
+{
+    . = phys;
+
+    .entry              : { __entry_start = .;      *(.entry)   }
+    .text               : { __text_start = .;       *(.text)    }
+    .data               : { __data_start = .;       *(.data)    }
+    .rodata             : { __rodata_start = .;     *(.rodata)  }
+    .bss                : { __bss_start = .;        *(.bss)     }
+    
+    __end = .;
+}
+
+kernel_linker.ld:
+ENTRY(start)
+OUTPUT_FORMAT("binary")
+phys = 0x00100000;
+
+SECTIONS
+{
+    . = phys;
+
+    .entry              : { __entry_start = .;      *(.entry)   }
+    .text               : { __text_start = .;       *(.text)    }
+    .data               : { __data_start = .;       *(.data)    }
+    .rodata             : { __rodata_start = .;     *(.rodata)  }
+    .bss                : { __bss_start = .;        *(.bss)     }
+    
+    __end = .;
+}

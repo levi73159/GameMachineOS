@@ -14,9 +14,17 @@
     "functional": "c",
     "compare": "c",
     "new": "c",
-    "*.inc": "c"
+    "*.inc": "c",
+    "buffer": "c",
+    "internet": "c",
+    "socket": "c",
+    "string_view": "c",
+    "array": "c",
+    "ranges": "c",
+    "span": "c"
   },
   "terminal.integrated.env.linux": {
     "GTK_PATH": ""
-  }
+  },
+  "cSpell.words": ["VESA"]
 }
