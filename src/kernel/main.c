@@ -23,36 +23,6 @@ uint64_t time = 0;
 #define COLOR(r, g, b) ((b) | (g << 8) | (r << 16))
 #define CORD(x, y, info) (y * info->pitch / 4 + x)
 
-
-void clearScreen(int w, int h, VbeModeInfo *minf, uint32_t color, uint32_t *fb)
-{
-    for (int y = 0; y < h; y++)
-    {
-        for (int x = 0; x < w; x++)
-        {
-            fb[CORD(x, y, minf)] = color;
-        }
-    }
-}
-
-void timer()
-{
-    for (int y = 0; y < h; y++)
-    {
-        for (int x = 0; x < w; x++)
-        {
-            // Set the entire framebuffer to white color
-            fb[CORD(x, y, modeInfo)] = COLOR(255, 255, 255);
-
-            // Draw the square with red color
-            if (y >= squareY && y < squareY + squareSize && x >= squareX && x < squareX + squareSize)
-            {
-                fb[CORD(x, y, modeInfo)] = squareColor;
-            }
-        }
-    }
-}
-
 void keyboard(Registers *regs)
 {
     static bool shiftPressed = false;
@@ -143,7 +113,6 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
     driver = i8259_GetDriver();
 
     i686_IRQ_RegisterHandler(1, keyboard);
-    i686_IRQ_RegisterHandler(0, timer);
 
     clear();
     setColor(GREEN);
