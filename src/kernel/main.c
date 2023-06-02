@@ -156,14 +156,6 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
     i686_IRQ_RegisterHandler(1, keyboard);
     i686_IRQ_RegisterHandler(0, timer);
 
-    modeInfo = (VbeModeInfo *)MEMORY_MODE_INFO;
-    fb = (uint32_t *)(modeInfo->framebuffer);
-    w = modeInfo->width;
-    h = modeInfo->height;
-    squareX = (w - squareSize) / 2;
-    squareY = (h - squareSize) / 2;
-    squareColor = COLOR(255, 0, 0); // Red color
-
     clear();
     setColor(GREEN);
     printf("GameMachine version 1.7.1e Booted...\n\n");
