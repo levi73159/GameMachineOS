@@ -91,6 +91,7 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
 
     i686_IRQ_RegisterHandler(1, keyboard);
     i686_IRQ_RegisterHandler(0, timer);
+    i686_IRQ_RegisterHandler(12, mouseHandler); // Register mouse interrupt handler on IRQ 12
 
     modeInfo = (VbeModeInfo *)MEMORY_MODE_INFO;
     fb = (uint32_t *)(modeInfo->framebuffer);
@@ -102,9 +103,14 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
 
     clear();
 
-    driver->Unmask(1); // keyboard port
-    driver->Unmask(0);
+    driver->Unmask(1);  // keyboard port
+    driver->Unmask(12); // mouse port
 
+    for (int y = 0; y < h; y++)
+    {
+        for (int x = 0; x < w; x++)
+            fb[CORD(x, y, modeInfo)] = COLOR(x + 25, x * y, x + 15);
+    }
 end:
     for (;;)
     {

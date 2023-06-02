@@ -101,7 +101,7 @@ void __attribute__((cdecl)) start(uint16_t bootDrive)
             printf("Failed to pick mode with %dx%dx%d\n", desiredWidth, desiredHeight, desiredBpp);
             return;
         }
-        setMode();
+        // setMode();
     }
     else
     {
