@@ -137,16 +137,12 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
         waitTillInput();
         if (memcmp(g_CurrentInput, "clear", 5) == 0)
             clear();
-        if (memcmp(g_CurrentInput, "help", 4) == 0)
-            printf("clear help crash_me hlt di ei");
+        else if (memcmp(g_CurrentInput, "help", 4) == 0)
+            printf("clear help crash_me hlt di ei\n");
         else if (memcmp(g_CurrentInput, "crash_me", 8) == 0)
             crash_me();
-        else if (memcmp(g_CurrentInput, "hlt", 3) == 0)
+        else if (memcmp(g_CurrentInput, "exit", 3) == 0)
             return;
-        else if (memcmp(g_CurrentInput, "di", 2) == 0)
-            i686_DisableInterrupts();
-        else if (memcmp(g_CurrentInput, "ei", 2) == 0)
-            i686_EnableInterrupts();
         else
         {
             setColor(RED);

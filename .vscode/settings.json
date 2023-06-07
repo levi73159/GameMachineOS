@@ -16,6 +16,8 @@
     "new": "c",
     "*.inc": "c"
   },
+  "nasm.outputFormat": "bin",
+  "[nasm]": {},
   "terminal.integrated.env.linux": {
     "GTK_PATH": ""
   }
