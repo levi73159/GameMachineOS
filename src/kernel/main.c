@@ -7,6 +7,7 @@
 #include <util/keyboard.h>
 #include <arch/i686/io.h>
 #include <stddef.h>
+#include "debug.h"
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -19,9 +20,6 @@ static char g_CurrentInput[MAX_STRING_LENGTH] = {0};
 static bool haveInput = false;
 
 uint64_t time = 0;
-
-#define COLOR(r, g, b) ((b) | (g << 8) | (r << 16))
-#define CORD(x, y, info) (y * info->pitch / 4 + x)
 
 void keyboard(Registers *regs)
 {
@@ -72,9 +70,9 @@ void keyboard(Registers *regs)
         {
             // Remove the last character from the string
             inputString[--stringLength] = '\0';
-            setScreenXY(stringLength, getScreenY());
+            VGA_setScreenXY(stringLength, VGA_getScreenY());
             putc('\0');
-            setScreenXY(0, getScreenY());
+            VGA_setScreenXY(0, VGA_getScreenY());
         }
         return;
     }
@@ -86,7 +84,7 @@ void keyboard(Registers *regs)
         // Check if the string is already at its maximum length
         if (stringLength >= MAX_STRING_LENGTH - 1)
         {
-            printf("Maximum input length reached.\n");
+            printf(putc, "Maximum input length reached.\n");
             return;
         }
         // Append the character to the string
@@ -95,7 +93,7 @@ void keyboard(Registers *regs)
     }
     // Print the accumulated string
     printf("%s", inputString);
-    setScreenXY(0, getScreenY());
+    VGA_setScreenXY(0, VGA_getScreenY());
 }
 
 void waitTillInput()
@@ -110,14 +108,14 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
     memset(&__bss_start, 0, (&__end) - (&__bss_start));
 
     HAL_Init();
+    log_info(__FILE__, "Hall initialized!");
     driver = i8259_GetDriver();
+    log_info(__FILE__, "Kernel started");
+    log_info(__FILE__, "bootDriveId=%d, driverName=%s", bootDrive, driver->Name);
 
     i686_IRQ_RegisterHandler(1, keyboard);
 
-    clear();
-    setColor(GREEN);
     printf("GameMachine version 1.7.1e Booted...\n\n");
-    resetColor();
 
     printf("Welcome to the GameMachine!\n");
     printf("Name:\n");
@@ -130,9 +128,7 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
 
     while (true)
     {
-        setColor(CYAN);
-        printf("%s_gamemachine884[/]\n", name);
-        resetColor();
+        printf("%s_gamemachine%d[/]\n", name, bootDrive);
         driver->Unmask(1); // keyboard port
         waitTillInput();
         if (memcmp(g_CurrentInput, "clear", 5) == 0)
@@ -142,16 +138,17 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
         else if (memcmp(g_CurrentInput, "crash_me", 8) == 0)
             crash_me();
         else if (memcmp(g_CurrentInput, "exit", 3) == 0)
-            return;
+            goto end;
         else
         {
             setColor(RED);
             printf("Error: Invalid command: %s\n", g_CurrentInput);
-            resetColor();
+            setColor(WHITE);
         }
     }
 
 end:
+    log_info(__FILE__, "Kernel ended\n");
     for (;;)
     {
     }

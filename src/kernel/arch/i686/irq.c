@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include "stdio.h"
 #include <util/arrays.h>
+#include <debug.h>
 
 #define PIC_REMAP_OFFSET 0x20
 
@@ -21,9 +22,8 @@ void i686_IRQ_Handler(Registers *regs)
     }
     else
     {
-        setColor(RED);
         printf("Unhandled IRQ %d...\n", irq);
-        resetColor();
+        log_warn(__FILE__, "Unhandled IRQ %d", irq);
     }
 
     // send EOI
@@ -46,15 +46,11 @@ void i686_IRQ_Initialize()
 
     if (g_Driver == NULL)
     {
-        setColor(YELLOW);
-        printf("Warning: No PIC found!", YELLOW);
-        resetColor();
+        printf("Warning: No PIC found!");
         return;
     }
 
-    setColor(GREEN);
     printf("Found %s PIC.\n", g_Driver->Name);
-    resetColor();
     g_Driver->Initialize(PIC_REMAP_OFFSET, PIC_REMAP_OFFSET + 8, false);
 
     // register ISR handlers for each of the 16 irq lines

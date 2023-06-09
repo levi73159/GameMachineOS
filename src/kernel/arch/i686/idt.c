@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "../../util/binary.h"
+#include <debug.h>
 
 typedef struct
 {
@@ -38,6 +39,7 @@ void i686_IDT_EnableGate(int interrupt)
 void i686_IDT_DisableGate(int interrupt)
 {
     FLAG_UNSET(g_IDT[interrupt].Flags, IDT_FLAG_PRESENT);
+    log_info(__FILE__, "Disable interrupt: 0x%x", interrupt, interrupt);
 }
 
 void i686_IDT_Initialize()

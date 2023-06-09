@@ -20,5 +20,6 @@
   "[nasm]": {},
   "terminal.integrated.env.linux": {
     "GTK_PATH": ""
-  }
+  },
+  "cSpell.words": ["debugf"]
 }
