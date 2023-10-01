@@ -6,14 +6,20 @@
 
 const unsigned SCREEN_WIDTH = 80;
 const unsigned SCREEN_HEIGHT = 25;
-const uint8_t DEFAULT_COLOR = 0x7;
+uint8_t DEFAULT_COLOR = 0x0F;
 
-uint8_t* g_ScreenBuffer = (uint8_t*)0xB8000;
+uint8_t *g_ScreenBuffer = (uint8_t *)0xB8000;
 int g_ScreenX = 0, g_ScreenY = 0;
 
 void VGA_putchr(int x, int y, char c)
 {
+    VGA_putcolor(x, y, DEFAULT_COLOR);
     g_ScreenBuffer[2 * (y * SCREEN_WIDTH + x)] = c;
+}
+
+void VGA_setColor(uint8_t color)
+{
+    DEFAULT_COLOR = color;
 }
 
 void VGA_putcolor(int x, int y, uint8_t color)
@@ -40,6 +46,15 @@ void VGA_setcursor(int x, int y)
     i686_outb(0x3D4, 0x0E);
     i686_outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
 }
+
+void VGA_setScreenXY(int x, int y)
+{
+    g_ScreenX = x;
+    g_ScreenY = y;
+}
+
+int VGA_getScreenX() { return g_ScreenX; }
+int VGA_getScreenY() { return g_ScreenY; }
 
 void VGA_clrscr()
 {
@@ -78,25 +93,26 @@ void VGA_putc(char c)
 {
     switch (c)
     {
-        case '\n':
-            g_ScreenX = 0;
-            g_ScreenY++;
-            break;
-    
-        case '\t':
-            for (int i = 0; i < 4 - (g_ScreenX % 4); i++)
-                VGA_putc(' ');
-            break;
+    case '\n':
+        g_ScreenX = 0;
+        g_ScreenY++;
+        break;
 
-        case '\r':
-            g_ScreenX = 0;
-            break;
+    case '\t':
+        for (int i = 0; i < 4 - (g_ScreenX % 4); i++)
+            VGA_putc(' ');
+        break;
 
-        default:
-            VGA_putchr(g_ScreenX, g_ScreenY, c);
-            g_ScreenX++;
-            break;
+    case '\r':
+        g_ScreenX = 0;
+        break;
+
+    default:
+        VGA_putchr(g_ScreenX, g_ScreenY, c);
+        g_ScreenX++;
+        break;
     }
+
 
     if (g_ScreenX >= SCREEN_WIDTH)
     {

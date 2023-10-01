@@ -294,6 +294,11 @@ void debug_buffer(const char *msg, const void *buffer, uint32_t count)
     fprint_buffer(VFS_FD_DEBUG, msg, buffer, count);
 }
 
+void setColor(uint8_t color)
+{
+    VGA_setColor(color);
+}
+
 void clear()
 {
     VGA_clrscr();

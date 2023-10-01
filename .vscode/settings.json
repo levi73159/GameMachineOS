@@ -1,7 +1,7 @@
 {
   "files.associations": {
     "*.ejs": "html",
-    "*.asm": "assembly",
+    "*.asm": "nasm",
     "*.gc": "arm",
     "*.h": "c",
     "*.x": "c",
@@ -16,10 +16,11 @@
     "new": "c",
     "*.inc": "c"
   },
-  "nasm.outputFormat": "bin",
+  "nasm.outputFormat": "elf32",
   "[nasm]": {},
   "terminal.integrated.env.linux": {
     "GTK_PATH": ""
   },
-  "cSpell.words": ["debugf"]
+  "cSpell.words": ["debugf"],
+  "nasm.nasmPath": "/bin/nasm",
 }
