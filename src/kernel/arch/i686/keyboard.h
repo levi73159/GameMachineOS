@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -44,6 +45,7 @@
 #define SCAN_CODE_SINGLE_QUOTE 0x28
 #define SCAN_CODE_BACK_TICK 0x29
 #define SCAN_CODE_LEFT_SHIFT 0x2A
+#define SCAN_CODE_RELEASED_LEFT_SHIFT 0xAA
 #define SCAN_CODE_BACKSLASH 0x2B
 #define SCAN_CODE_Z 0x2C
 #define SCAN_CODE_X 0x2D
@@ -56,6 +58,7 @@
 #define SCAN_CODE_PERIOD 0x34
 #define SCAN_CODE_SLASH 0x35
 #define SCAN_CODE_RIGHT_SHIFT 0x36
+#define SCAN_CODE_RELEASED_RIGHT_SHIFT 0xb6
 #define SCAN_CODE_KEYPAD_ASTERISK 0x37
 #define SCAN_CODE_LEFT_ALT 0x38
 #define SCAN_CODE_SPACE 0x39
@@ -97,4 +100,17 @@
 #define KEYBOARD_STATUS_LEFT_SHIFT (1 << 0)
 #define KEYBOARD_STATUS_RIGHT_SHIFT (1 << 1)
 
+typedef struct
+{
+    uint8_t keyCode;
+    char keyChar;
+} key;
+
 char convertScanCodeToChar(uint8_t scanCode, bool shiftPressed);
+bool isShiftKeyPressed();
+uint8_t getKeyCode(bool new, bool remove);
+
+void clearBuffer();
+void i686_Keyboard_Initialize();
+void enableKeyboard();
+void disableKeyboard();

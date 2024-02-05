@@ -124,6 +124,7 @@ def build_floppy(image, stage1, stage2, kernel, files, env):
 
     # copy rest of files
     src_root = env['BASEDIR']
+    print(files)
     for file in files:
         file_src = file.srcnode().path
         file_rel = os.path.relpath(file_src, src_root)
@@ -135,6 +136,7 @@ def build_floppy(image, stage1, stage2, kernel, files, env):
         else:
             print('    ... copying', file_rel)
             sh.mcopy('-i', image, file_src, file_dst)
+
 
 
 def create_partition_table(target: str, align_start: int):
@@ -154,8 +156,8 @@ def mount_fs(image: str, mount_dir: str):
     print('mounting done..')
 
 def unmount_fs(mount_dir: str):
-    print('unmounting')
-    time.sleep(3)
+    print(f'unmounting {mount_dir}')
+    time.sleep(6)
     sh.fusermount(u=mount_dir)
     print('unmounting done')
 

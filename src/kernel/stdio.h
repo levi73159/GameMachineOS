@@ -2,7 +2,9 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <hal/vfs.h>
+#include <arch/i686/keyboard.h>
 
+#define MAX_STRING_LENGTH 1024
 void fputc(char c, fd_t file);
 void fputs(const char *str, fd_t file);
 void vfprintf(fd_t file, const char *fmt, va_list args);
@@ -21,6 +23,10 @@ void debugc(char c);
 void debugs(const char *str);
 void debugf(const char *fmt, ...);
 void debug_buffer(const char *msg, const void *buffer, uint32_t count);
+
+key getkey(bool print, bool wait);
+const char *gets(uint8_t endCode, bool print);
+
 
 #define BLUE 0x01
 #define GREEN 0x02

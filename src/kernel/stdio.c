@@ -4,8 +4,14 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <util/arrays.h>
+#include <memory.h>
 
 #include <hal/vfs.h>
+#include <arch/i686/pic.h>
+#include <arch/i686/i8259.h>
+
+#include <memdefs.h>
 
 void fputc(char c, fd_t file)
 {
@@ -34,6 +40,7 @@ void fputs(const char *str, fd_t file)
 #define PRINTF_LENGTH_LONG_LONG 4
 
 const char g_HexChars[] = "0123456789abcdef";
+static PICDriver *driver = NULL;
 
 void fprintf_unsigned(fd_t file, unsigned long long number, int radix)
 {
@@ -302,4 +309,82 @@ void setColor(uint8_t color)
 void clear()
 {
     VGA_clrscr();
+}
+
+key getkey(bool print, bool wait)
+{
+    uint8_t keyCode = getKeyCode(false, true);
+    if (!wait || keyCode != 0)
+    {
+        key k = {keyCode, convertScanCodeToChar(keyCode, false)};
+        if (print == true)
+            putc(k.keyChar);
+
+        return k;
+    }
+
+    enableKeyboard();
+    while (keyCode == 0)
+        keyCode = getKeyCode(false, true);
+    key k = {keyCode, convertScanCodeToChar(keyCode, false)};
+    if (print == true)
+        putc(k.keyChar);
+    return k;
+}
+
+const char *gets(uint8_t endCode, bool print)
+{
+    int oldX = VGA_getScreenX();
+    int oldY = VGA_getScreenY();
+    char *string = memset(MEMORY_INPUT, 0, MEMORY_INPUT_SIZE);
+    uint8_t currentKey = 0;
+    int i = 0;
+    int line = 0;
+    enableKeyboard();
+    bool shiftPressed = false;
+    do
+    {
+        currentKey = getKeyCode(false, true);
+        if (currentKey == endCode)
+            break;
+
+        if (currentKey == SCAN_CODE_BACKSPACE)
+        {
+            if (i > 0)
+            {
+                i--;
+                if (print)
+                {
+                    VGA_setScreenXY(oldX + i, oldY);
+                }
+                putc('\0');
+                string[i] = 0;
+                
+                if (print && i == 0)
+                    VGA_setcursor(oldX, oldY);
+            }
+        }
+        else if (currentKey == SCAN_CODE_LEFT_SHIFT || currentKey == SCAN_CODE_RIGHT_SHIFT)
+        {
+            shiftPressed = true;
+        }
+        else if (currentKey == SCAN_CODE_RELEASED_LEFT_SHIFT || currentKey == SCAN_CODE_RELEASED_RIGHT_SHIFT)
+        {
+            shiftPressed = false;
+        }
+        else if (currentKey != 0)
+        {
+            char c = convertScanCodeToChar(currentKey, shiftPressed);
+            string[i] = c;
+            i++;
+        }
+
+        if (currentKey != 0 && print && i != 0)
+        {
+            VGA_setScreenXY(oldX, oldY);
+            puts(string);
+        }
+    } while (currentKey != endCode);
+    
+    return string;
 }

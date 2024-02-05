@@ -1,8 +1,10 @@
 {
   "files.associations": {
-    "*.ejs": "html",
     "*.asm": "nasm",
     "*.gc": "arm",
+    "*.gml": "go",
+    "*.xobj": "yaml",
+    "*.ejs": "html",
     "*.h": "c",
     "*.x": "c",
     "cstddef": "c",
@@ -14,13 +16,19 @@
     "functional": "c",
     "compare": "c",
     "new": "c",
-    "*.inc": "c"
+    "*.inc": "c",
+    "cstdint": "c",
+    "cassert": "c",
+    "random": "c",
+    "source_location": "c"
   },
   "nasm.outputFormat": "elf32",
   "[nasm]": {},
   "terminal.integrated.env.linux": {
     "GTK_PATH": ""
   },
-  "cSpell.words": ["debugf"],
+  "cSpell.words": ["debugf", "ENDL"],
   "nasm.nasmPath": "/bin/nasm",
+  "C_Cpp.errorSquiggles": "enabled",
+  "cSpell.enableFiletypes": ["assembly", "shellscript"]
 }

@@ -1,4 +1,56 @@
 #include "keyboard.h"
+#include <stdio.h>
+#include <memory.h>
+#include "pic.h"
+#include "i8259.h"
+#include "isr.h"
+#include <util/arrays.h>
+#include <debug.h>
+
+#define BUFFER_LENGTH 1024
+uint8_t keyCodeBuffer[BUFFER_LENGTH];
+PICDriver *driver = NULL;
+
+void shiftLeft(uint8_t *array, unsigned int length)
+{
+    for (unsigned int i = 0; i < length - 1; i++)
+    {
+        array[i] = array[i + 1];
+    }
+}
+
+void keyboardHandler(Registers *regs)
+{
+    // Read the keyboard input data from the appropriate I/O port(s)
+    uint8_t data = i686_inb(KEYBOARD_DATA_PORT);
+    // Check the most significant bit of the data byte
+    // If it is set (1), it indicates a key release event, so we ignore it
+    bool keyCodeUpdated = false;
+    if (data & 0x80)
+    {
+        if (data != SCAN_CODE_RELEASED_LEFT_SHIFT && data != SCAN_CODE_RELEASED_RIGHT_SHIFT)
+            return;
+    }
+
+    int indexToFree;
+    if (getFree(keyCodeBuffer, BUFFER_LENGTH, &indexToFree))
+    {
+        keyCodeBuffer[indexToFree] = data;
+        keyCodeUpdated = true;
+    }
+
+    if (keyCodeUpdated)
+        return;
+    shiftLeft(keyCodeBuffer, BUFFER_LENGTH);
+    keyCodeBuffer[BUFFER_LENGTH - 1] = data;
+    keyCodeUpdated = true;
+}
+
+void i686_Keyboard_Initialize()
+{
+    i686_IRQ_RegisterHandler(1, keyboardHandler);
+    driver = i8259_GetDriver();
+}
 
 bool isShiftKeyPressed()
 {
@@ -128,4 +180,43 @@ char convertScanCodeToChar(uint8_t scanCode, bool shiftPressed)
     }
 
     return '\0'; // Return null character for unknown scan codes
+}
+
+uint8_t getKeyCode(bool new, bool remove)
+{
+    uint8_t code = 0;
+    if (new)
+    {
+        uint32_t index;
+        bool isLast = !getFree(keyCodeBuffer, BUFFER_LENGTH, &index);
+        if (isLast)
+            index = BUFFER_LENGTH - 1;
+        else
+            index--;
+        code = keyCodeBuffer[index];
+        if (remove && code != 0)
+            keyCodeBuffer[index] = 0;
+    }
+    else
+    {
+        code = keyCodeBuffer[0];    
+        if (remove && code != 0)
+            shiftLeft(keyCodeBuffer, BUFFER_LENGTH);
+    }
+    return code;
+}
+
+void clearBuffer()
+{
+    *keyCodeBuffer = memset(keyCodeBuffer, 0, BUFFER_LENGTH);
+}
+
+void enableKeyboard()
+{
+    driver->Unmask(1);
+}
+
+void disableKeyboard()
+{
+    driver->Mask(1);
 }

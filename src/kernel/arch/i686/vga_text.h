@@ -7,3 +7,4 @@ void VGA_setScreenXY(int x, int y);
 int VGA_getScreenX();
 int VGA_getScreenY();
 void VGA_setColor(uint8_t color);
+void VGA_setcursor(int x, int y);
