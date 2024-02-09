@@ -18,6 +18,11 @@ extern void _init();
 
 uint64_t time = 0;
 
+#define NUM(...) NUM_(__VA_ARGS__, , , , , , , , , , )
+#define NUM_(...) NUM_MSVCHACK((__VA_ARGS__))
+#define NUM_MSVCHACK(numlist_) NUM__ numlist_
+#define NUM__(a1_, a2_, a3_, a4_, a5_, a6_, a7_, a8_, ...) a1_##a2_##a3_##a4_##a5_##a6_##a7_##a8_
+
 void __attribute__((section(".entry"))) start(uint16_t bootDrive)
 {
     memset(&__bss_start, 0, (&__end) - (&__bss_start));
@@ -29,10 +34,8 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
     log_info(__FILE__, "Kernel started");
     log_info(__FILE__, "bootDriveId=%d", bootDrive);
 
-    // i686_IRQ_RegisterHandler(1, keyboard);
 
     printf("GameMachine version 1.7.1f Booted...\n\n");
-    printf("GMOS: \n", (char *)0x00040000);
 
     printf("Welcome to the GameMachine!\n");
     printf("Name:\n");
