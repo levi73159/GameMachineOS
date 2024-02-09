@@ -311,22 +311,22 @@ void clear()
     VGA_clrscr();
 }
 
-key getkey(bool print, bool wait)
+Keyboard_Key getkey(bool print, bool wait)
 {
-    uint8_t keyCode = getKeyCode(false, true);
+    uint8_t keyCode = Keyboard_GetKeyCode(false, true);
     if (!wait || keyCode != 0)
     {
-        key k = {keyCode, convertScanCodeToChar(keyCode, false)};
+        Keyboard_Key k = {keyCode, Keyboard_ScanCodeToChar(keyCode, false)};
         if (print == true)
             putc(k.keyChar);
 
         return k;
     }
 
-    enableKeyboard();
+    Keyboard_Enable();
     while (keyCode == 0)
-        keyCode = getKeyCode(false, true);
-    key k = {keyCode, convertScanCodeToChar(keyCode, false)};
+        keyCode = Keyboard_GetKeyCode(false, true);
+    Keyboard_Key k = {keyCode, Keyboard_ScanCodeToChar(keyCode, false)};
     if (print == true)
         putc(k.keyChar);
     return k;
@@ -340,11 +340,11 @@ const char *gets(uint8_t endCode, bool print)
     uint8_t currentKey = 0;
     int i = 0;
     int line = 0;
-    enableKeyboard();
+    Keyboard_Enable();
     bool shiftPressed = false;
     do
     {
-        currentKey = getKeyCode(false, true);
+        currentKey = Keyboard_GetKeyCode(false, true);
         if (currentKey == endCode)
             break;
 
@@ -374,7 +374,7 @@ const char *gets(uint8_t endCode, bool print)
         }
         else if (currentKey != 0)
         {
-            char c = convertScanCodeToChar(currentKey, shiftPressed);
+            char c = Keyboard_ScanCodeToChar(currentKey, shiftPressed);
             string[i] = c;
             i++;
         }

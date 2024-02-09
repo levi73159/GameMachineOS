@@ -20,7 +20,8 @@
     "cstdint": "c",
     "cassert": "c",
     "random": "c",
-    "source_location": "c"
+    "source_location": "c",
+    "*.in": "c"
   },
   "nasm.outputFormat": "elf32",
   "[nasm]": {},

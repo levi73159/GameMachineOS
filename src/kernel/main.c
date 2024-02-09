@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "stdio.h"
-#include "memory.h"
+#include "string.h"
 #include <hal/hal.h>
 #include <arch/i686/irq.h>
 #include <arch/i686/i8259.h>
@@ -23,6 +23,29 @@ uint64_t time = 0;
 #define NUM_MSVCHACK(numlist_) NUM__ numlist_
 #define NUM__(a1_, a2_, a3_, a4_, a5_, a6_, a7_, a8_, ...) a1_##a2_##a3_##a4_##a5_##a6_##a7_##a8_
 
+bool onKeyPress(uint8_t key, Registers *regs)
+{
+    switch (key)
+    {
+    case SCAN_CODE_W:
+        printf("move up\n");
+        break;
+
+    case SCAN_CODE_S:
+        printf("move down\n");
+        break;
+
+    case SCAN_CODE_A:
+        printf("move left\n");
+        break;
+
+    case SCAN_CODE_D:
+        printf("move right\n");
+        break;
+    }
+    return true;
+}
+
 void __attribute__((section(".entry"))) start(uint16_t bootDrive)
 {
     memset(&__bss_start, 0, (&__end) - (&__bss_start));
@@ -34,7 +57,6 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
     log_info(__FILE__, "Kernel started");
     log_info(__FILE__, "bootDriveId=%d", bootDrive);
 
-
     printf("GameMachine version 1.7.1f Booted...\n\n");
 
     printf("Welcome to the GameMachine!\n");
@@ -42,31 +64,35 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive)
 
     const char *input = gets(SCAN_CODE_ENTER, true);
     const char name[MAX_STRING_LENGTH];
-    memcpy(name, input, MAX_STRING_LENGTH);
+    strcpy(name, input);
     putc('\n');
     printf("Welcome, %s!\n", name);
 
+    Keyboard_Enable();
 
-    while (true)
-    {
-        printf("%s_gamemachine-%d[/]\n", name, bootDrive);
-        gets(SCAN_CODE_ENTER, true); // we already have input array ptr
-        putc('\n');
-        if (memcmp(input, "clear", 5) == 0)
-            clear();
-        else if (memcmp(input, "help", 4) == 0)
-            printf("clear help crash_me hlt di ei\n");
-        else if (memcmp(input, "crash_me", 8) == 0)
-            crash_me();
-        else if (memcmp(input, "exit", 3) == 0)
-            goto end;
-        else
-        {
-            setColor(RED);
-            printf("Error: Invalid command: %s\n", input);
-            setColor(WHITE);
-        }
-    }
+    printf("LOL, play game plz");
+    Keyboard_Subscribe(onKeyPress);
+
+    // while (true)
+    // {
+    //     printf("%s_gamemachine-%d[/]\n", name, bootDrive);
+    //     gets(SCAN_CODE_ENTER, true); // we already have input array ptr
+    //     putc('\n');
+    //     if (memcmp(input, "clear", 5) == 0)
+    //         clear();
+    //     else if (memcmp(input, "help", 4) == 0)
+    //         printf("clear help crash_me exit\n");
+    //     else if (memcmp(input, "crash_me", 8) == 0)
+    //         crash_me();
+    //     else if (memcmp(input, "exit", 3) == 0)
+    //         goto end;
+    //     else
+    //     {
+    //         setColor(RED);
+    //         printf("Error: Invalid command: %s\n", input);
+    //         setColor(WHITE);
+    //     }
+    // }
 
 end:
     log_info(__FILE__, "Kernel ended\n");
@@ -74,10 +100,3 @@ end:
     {
     }
 }
-
-// void waitTillInput()
-// {
-//     while (!haveInput)
-//         continue;
-//     haveInput = false;
-// }

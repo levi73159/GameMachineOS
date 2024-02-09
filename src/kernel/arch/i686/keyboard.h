@@ -2,6 +2,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include "isr.h"
 
 #define SCAN_CODE_ESCAPE 0x01
 #define SCAN_CODE_1 0x02
@@ -104,13 +105,16 @@ typedef struct
 {
     uint8_t keyCode;
     char keyChar;
-} key;
+} Keyboard_Key;
 
-char convertScanCodeToChar(uint8_t scanCode, bool shiftPressed);
-bool isShiftKeyPressed();
-uint8_t getKeyCode(bool new, bool remove);
+typedef bool (*keyPress)(uint8_t, Registers *);
 
-void clearBuffer();
+char Keyboard_ScanCodeToChar(uint8_t scanCode, bool shiftPressed);
+bool Keyboard_ShiftKeyPressed();
+uint8_t Keyboard_GetKeyCode(bool new, bool remove);
+
+void Keyboard_ClearBuffer();
 void i686_Keyboard_Initialize();
-void enableKeyboard();
-void disableKeyboard();
+void Keyboard_Enable();
+void Keyboard_Disable();
+bool Keyboard_Subscribe(keyPress func);

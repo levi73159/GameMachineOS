@@ -24,7 +24,7 @@ void debugs(const char *str);
 void debugf(const char *fmt, ...);
 void debug_buffer(const char *msg, const void *buffer, uint32_t count);
 
-key getkey(bool print, bool wait);
+Keyboard_Key getkey(bool print, bool wait);
 const char *gets(uint8_t endCode, bool print);
 
 
