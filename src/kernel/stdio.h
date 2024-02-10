@@ -46,3 +46,4 @@ unsigned VGA_GetH();
 #define LIGHT_PURPLE 0x0D
 #define YELLOW 0x0E
 #define WHITE 0x0F
+

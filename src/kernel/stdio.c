@@ -338,7 +338,7 @@ const char *gets(uint8_t endCode, bool print)
 {
     int oldX = VGA_getScreenX();
     int oldY = VGA_getScreenY();
-    char *string = memset(MEMORY_INPUT, 0, MEMORY_INPUT_SIZE);
+    char *string = memset(MEMORY_INPUT, 0, MEMORY_INPUT_SIZE+1);
     uint8_t currentKey = 0;
     int i = 0;
     int line = 0;
@@ -351,6 +351,8 @@ const char *gets(uint8_t endCode, bool print)
         if (currentKey == endCode)
             break;
 
+       
+
         if (currentKey == SCAN_CODE_BACKSPACE && !isLetGo)
         {
             if (i > 0)
@@ -359,13 +361,17 @@ const char *gets(uint8_t endCode, bool print)
                 if (print)
                 {
                     VGA_setScreenXY(oldX + i, oldY);
+                    putc('\0');
                 }
-                putc('\0');
                 string[i] = 0;
 
                 if (print && i == 0)
                     VGA_setcursor(oldX, oldY);
             }
+        }
+        else if ( i >= MEMORY_INPUT_SIZE )
+        {
+            continue;
         }
         else if ((currentKey == SCAN_CODE_LEFT_SHIFT || currentKey == SCAN_CODE_RIGHT_SHIFT) && !isLetGo)
         {
@@ -378,6 +384,8 @@ const char *gets(uint8_t endCode, bool print)
         else if (currentKey != 0 && !isLetGo)
         {
             char c = Keyboard_ScanCodeToChar(currentKey, shiftPressed);
+            if (c == '\0')
+                continue;
             string[i] = c;
             i++;
         }
@@ -387,6 +395,7 @@ const char *gets(uint8_t endCode, bool print)
             VGA_setScreenXY(oldX, oldY);
             puts(string);
         }
+
     } while (currentKey != endCode);
 
     return string;

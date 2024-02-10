@@ -26,8 +26,8 @@ uint32_t x, y;
 #define NUM__(a1_, a2_, a3_, a4_, a5_, a6_, a7_, a8_, ...) a1_##a2_##a3_##a4_##a5_##a6_##a7_##a8_
 
 char bitmap[25][80];
-int offset = 0;
-uint8_t background;
+uint8_t drawColor = WHITE;
+uint8_t background = BLACK;
 bool g_shouldDraw = false;
 bool shouldClear = false;
 
@@ -42,11 +42,21 @@ void clearBitmap()
     }
 }
 
-void update()
+void clearArea(int x, int y)
+{
+    if (x < 0 || y < 0) return;
+    if (x >= 80 || y >= 25) return;
+
+    char color = bitmap[y][x];
+    if (color == -1)
+        VGA_putcolor(x, y, background);
+    else
+        VGA_putcolor(x, y, color << 4);
+}
+
+void clearAll()
 {
     clear();
-    if (g_shouldDraw)
-        bitmap[y][x] = WHITE + offset;
     for (size_t _y = 0; _y < 25; _y++)
     {
         for (size_t _x = 0; _x < 80; _x++)
@@ -54,10 +64,22 @@ void update()
             char color = bitmap[_y][_x];
             if (color == -1)
                 continue;
-            VGA_putcolor(_x, _y, color * 16);
+            VGA_putcolor(_x, _y, color << 4);
         }
     }
-    VGA_putcolor(x, y, (WHITE + offset) * 16);
+    VGA_putcolor(x, y, drawColor << 4);
+    VGA_setcursor(x, y);
+}
+
+void update()
+{
+    if (g_shouldDraw)
+    {
+        bitmap[y][x] = drawColor;
+        VGA_putcolor(x, y, drawColor << 4);
+    }
+    
+    VGA_putcolor(x, y, drawColor << 4);
     VGA_setcursor(x, y);
 }
 
@@ -83,12 +105,14 @@ bool onKeyPress(uint8_t keyCode, Registers *regs)
         {
             clearBitmap();
             VGA_setColor(background);
+            clearAll();
             update();
             shouldClear = false;
             return true;
         } else if (keyCode == SCAN_CODE_N)
         {
             VGA_setColor(background);
+            clearAll();
             update();
             shouldClear = false;
             return true;
@@ -109,37 +133,50 @@ bool onKeyPress(uint8_t keyCode, Registers *regs)
     case SCAN_CODE_W:
         if (y <= 0)
             break;
+        clearArea(x, y);
         y -= 1;
         break;
 
     case SCAN_CODE_S:
         if (y >= VGA_GetH() - 1)
             break;
+        clearArea(x, y);
         y += 1;
         break;
 
     case SCAN_CODE_A:
         if (x <= 0)
             break;
+        clearArea(x, y);
         x -= 1;
         break;
     case SCAN_CODE_D:
         if (x >= VGA_GetW() - 1)
             break;
+        clearArea(x, y);
         x += 1;
         break;
 
     case SCAN_CODE_PAGE_UP:
-        offset++;
+        drawColor++;
         break;
 
     case SCAN_CODE_PAGE_DOWN:
-        offset--;
+        drawColor--;
+        break;
+
+    case SCAN_CODE_F1:
+        char color = bitmap[y][x];
+        if (color == -1)
+            drawColor = background >> 4;
+        else
+            drawColor = color;
         break;
 
     case SCAN_CODE_TAB:
-        background = (WHITE + offset) * 16;
-        VGA_setColor((WHITE + offset) * 16);
+        background = drawColor << 4;
+        VGA_setColor(background);
+        clearAll();
         break;
 
     case SCAN_CODE_BACKSPACE:
@@ -149,12 +186,13 @@ bool onKeyPress(uint8_t keyCode, Registers *regs)
     case SCAN_CODE_ESCAPE:
         shouldClear = true;
         VGA_setScreenXY(0, VGA_GetH() - 5);
-        VGA_setColor(GRAY * 16);
+        VGA_setColor(GRAY << 4);
         printf("Do you wanna clear screen (y/n)?\n");
         return;
 
     case SCAN_CODE_F2:
-        floodFill(x, y, bitmap[y][x], WHITE + offset);
+        floodFill(x, y, bitmap[y][x], drawColor);
+        clearAll();
         break;
 
     case SCAN_CODE_SPACE:
