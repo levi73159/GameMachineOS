@@ -8,8 +8,24 @@
 #include <debug.h>
 
 #define BUFFER_LENGTH 1024
-uint8_t keyCodeBuffer[BUFFER_LENGTH];
-PICDriver *driver = NULL;
+#define SUBSCRIBE_LENGTH 5
+uint8_t g_KeyCodeBuffer[BUFFER_LENGTH];
+PICDriver *g_Driver = NULL;
+keyPress g_KeyPresses[SUBSCRIBE_LENGTH];
+
+bool Keyboard_Subscribe(keyPress func)
+{
+    for (uint16_t i = 0; i < SUBSCRIBE_LENGTH; i++)
+    {
+        if (g_KeyPresses[i] != NULL)
+            continue;
+
+        g_KeyPresses[i] = func;
+        return true;
+    }
+    log_warn("KEYBOARD", "No slots to subscribe the function to!");
+    return false;
+}
 
 void shiftLeft(uint8_t *array, unsigned int length)
 {
@@ -26,33 +42,50 @@ void keyboardHandler(Registers *regs)
     // Check the most significant bit of the data byte
     // If it is set (1), it indicates a key release event, so we ignore it
     bool keyCodeUpdated = false;
-    if (data & 0x80)
+
+    for (uint16_t i = 0; i < SUBSCRIBE_LENGTH; i++)
     {
-        if (data != SCAN_CODE_RELEASED_LEFT_SHIFT && data != SCAN_CODE_RELEASED_RIGHT_SHIFT)
+        if (g_KeyPresses[i] == NULL)
+            break;
+
+        // if false it will append the key to the list, if true it wont add the key, saying that it was handle
+        if (g_KeyPresses[i](data, regs))
             return;
     }
 
     int indexToFree;
-    if (getFree(keyCodeBuffer, BUFFER_LENGTH, &indexToFree))
+    if (getFree(g_KeyCodeBuffer, BUFFER_LENGTH, &indexToFree))
     {
-        keyCodeBuffer[indexToFree] = data;
+        g_KeyCodeBuffer[indexToFree] = data;
         keyCodeUpdated = true;
     }
 
     if (keyCodeUpdated)
         return;
-    shiftLeft(keyCodeBuffer, BUFFER_LENGTH);
-    keyCodeBuffer[BUFFER_LENGTH - 1] = data;
+    shiftLeft(g_KeyCodeBuffer, BUFFER_LENGTH);
+    g_KeyCodeBuffer[BUFFER_LENGTH - 1] = data;
     keyCodeUpdated = true;
+}
+
+bool Keyboard_Extract(uint8_t* key)
+{
+    if (*key & 0x80)
+    {
+        *key &= 0x7F; // Extract lower 7 bits
+        // Now, keyCode contains the value of the key without the high bit (key released)
+        // You can use keyCode as needed
+        return true;
+    }
+    return false;
 }
 
 void i686_Keyboard_Initialize()
 {
     i686_IRQ_RegisterHandler(1, keyboardHandler);
-    driver = i8259_GetDriver();
+    g_Driver = i8259_GetDriver();
 }
 
-bool isShiftKeyPressed()
+bool Keyboard_ShiftKeyPressed()
 {
     // Read the keyboard status register to check the state of the shift modifier
     uint8_t status = i686_inb(KEYBOARD_STATUS_PORT);
@@ -65,7 +98,7 @@ bool isShiftKeyPressed()
     return leftShiftPressed || rightShiftPressed;
 }
 
-char convertScanCodeToChar(uint8_t scanCode, bool shiftPressed)
+char Keyboard_ScanCodeToChar(uint8_t scanCode, bool shiftPressed)
 {
     bool capitalize = shiftPressed;
 
@@ -182,41 +215,41 @@ char convertScanCodeToChar(uint8_t scanCode, bool shiftPressed)
     return '\0'; // Return null character for unknown scan codes
 }
 
-uint8_t getKeyCode(bool new, bool remove)
+uint8_t Keyboard_GetKeyCode(bool new, bool remove)
 {
     uint8_t code = 0;
     if (new)
     {
         uint32_t index;
-        bool isLast = !getFree(keyCodeBuffer, BUFFER_LENGTH, &index);
+        bool isLast = !getFree(g_KeyCodeBuffer, BUFFER_LENGTH, &index);
         if (isLast)
             index = BUFFER_LENGTH - 1;
         else
             index--;
-        code = keyCodeBuffer[index];
+        code = g_KeyCodeBuffer[index];
         if (remove && code != 0)
-            keyCodeBuffer[index] = 0;
+            g_KeyCodeBuffer[index] = 0;
     }
     else
     {
-        code = keyCodeBuffer[0];    
+        code = g_KeyCodeBuffer[0];
         if (remove && code != 0)
-            shiftLeft(keyCodeBuffer, BUFFER_LENGTH);
+            shiftLeft(g_KeyCodeBuffer, BUFFER_LENGTH);
     }
     return code;
 }
 
-void clearBuffer()
+void Keyboard_ClearBuffer()
 {
-    *keyCodeBuffer = memset(keyCodeBuffer, 0, BUFFER_LENGTH);
+    *g_KeyCodeBuffer = memset(g_KeyCodeBuffer, 0, BUFFER_LENGTH);
 }
 
-void enableKeyboard()
+void Keyboard_Enable()
 {
-    driver->Unmask(1);
+    g_Driver->Unmask(1);
 }
 
-void disableKeyboard()
+void Keyboard_Disable()
 {
-    driver->Mask(1);
+    g_Driver->Mask(1);
 }
