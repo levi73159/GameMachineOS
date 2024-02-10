@@ -42,11 +42,6 @@ void keyboardHandler(Registers *regs)
     // Check the most significant bit of the data byte
     // If it is set (1), it indicates a key release event, so we ignore it
     bool keyCodeUpdated = false;
-    if (data & 0x80)
-    {
-        if (data != SCAN_CODE_RELEASED_LEFT_SHIFT && data != SCAN_CODE_RELEASED_RIGHT_SHIFT)
-            return;
-    }
 
     for (uint16_t i = 0; i < SUBSCRIBE_LENGTH; i++)
     {
@@ -70,6 +65,18 @@ void keyboardHandler(Registers *regs)
     shiftLeft(g_KeyCodeBuffer, BUFFER_LENGTH);
     g_KeyCodeBuffer[BUFFER_LENGTH - 1] = data;
     keyCodeUpdated = true;
+}
+
+bool Keyboard_Extract(uint8_t* key)
+{
+    if (*key & 0x80)
+    {
+        *key &= 0x7F; // Extract lower 7 bits
+        // Now, keyCode contains the value of the key without the high bit (key released)
+        // You can use keyCode as needed
+        return true;
+    }
+    return false;
 }
 
 void i686_Keyboard_Initialize()

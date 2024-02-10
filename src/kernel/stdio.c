@@ -316,7 +316,8 @@ Keyboard_Key getkey(bool print, bool wait)
     uint8_t keyCode = Keyboard_GetKeyCode(false, true);
     if (!wait || keyCode != 0)
     {
-        Keyboard_Key k = {keyCode, Keyboard_ScanCodeToChar(keyCode, false)};
+        bool isRealized = Keyboard_Extract(&keyCode);
+        Keyboard_Key k = {keyCode, Keyboard_ScanCodeToChar(keyCode, false), isRealized};
         if (print == true)
             putc(k.keyChar);
 
@@ -326,7 +327,8 @@ Keyboard_Key getkey(bool print, bool wait)
     Keyboard_Enable();
     while (keyCode == 0)
         keyCode = Keyboard_GetKeyCode(false, true);
-    Keyboard_Key k = {keyCode, Keyboard_ScanCodeToChar(keyCode, false)};
+    bool isRealized = Keyboard_Extract(&keyCode);
+    Keyboard_Key k = {keyCode, Keyboard_ScanCodeToChar(keyCode, false), isRealized};
     if (print == true)
         putc(k.keyChar);
     return k;
@@ -345,10 +347,11 @@ const char *gets(uint8_t endCode, bool print)
     do
     {
         currentKey = Keyboard_GetKeyCode(false, true);
+        bool isLetGo = Keyboard_Extract(&currentKey);
         if (currentKey == endCode)
             break;
 
-        if (currentKey == SCAN_CODE_BACKSPACE)
+        if (currentKey == SCAN_CODE_BACKSPACE && !isLetGo)
         {
             if (i > 0)
             {
@@ -359,20 +362,20 @@ const char *gets(uint8_t endCode, bool print)
                 }
                 putc('\0');
                 string[i] = 0;
-                
+
                 if (print && i == 0)
                     VGA_setcursor(oldX, oldY);
             }
         }
-        else if (currentKey == SCAN_CODE_LEFT_SHIFT || currentKey == SCAN_CODE_RIGHT_SHIFT)
+        else if ((currentKey == SCAN_CODE_LEFT_SHIFT || currentKey == SCAN_CODE_RIGHT_SHIFT) && !isLetGo)
         {
             shiftPressed = true;
         }
-        else if (currentKey == SCAN_CODE_RELEASED_LEFT_SHIFT || currentKey == SCAN_CODE_RELEASED_RIGHT_SHIFT)
+        else if ((currentKey == SCAN_CODE_LEFT_SHIFT || currentKey == SCAN_CODE_LEFT_SHIFT) && isLetGo)
         {
             shiftPressed = false;
         }
-        else if (currentKey != 0)
+        else if (currentKey != 0 && !isLetGo)
         {
             char c = Keyboard_ScanCodeToChar(currentKey, shiftPressed);
             string[i] = c;
@@ -385,6 +388,6 @@ const char *gets(uint8_t endCode, bool print)
             puts(string);
         }
     } while (currentKey != endCode);
-    
+
     return string;
 }

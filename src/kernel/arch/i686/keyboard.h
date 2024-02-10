@@ -91,6 +91,8 @@
 #define SCAN_CODE_KEYPAD_PERIOD 0x53
 #define SCAN_CODE_F11 0x57
 #define SCAN_CODE_F12 0x58
+#define SCAN_CODE_PAGE_UP 0x49
+#define SCAN_CODE_PAGE_DOWN 0x51
 
 // Keyboard data register port
 #define KEYBOARD_DATA_PORT 0x60
@@ -105,6 +107,7 @@ typedef struct
 {
     uint8_t keyCode;
     char keyChar;
+    bool release;
 } Keyboard_Key;
 
 typedef bool (*keyPress)(uint8_t, Registers *);
@@ -118,3 +121,4 @@ void i686_Keyboard_Initialize();
 void Keyboard_Enable();
 void Keyboard_Disable();
 bool Keyboard_Subscribe(keyPress func);
+bool Keyboard_Extract(uint8_t *key);

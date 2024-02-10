@@ -22,10 +22,18 @@ void VGA_setColor(uint8_t color)
     DEFAULT_COLOR = color;
 }
 
+uint8_t VGA_getColor()
+{
+    return DEFAULT_COLOR;
+}
+
 void VGA_putcolor(int x, int y, uint8_t color)
 {
     g_ScreenBuffer[2 * (y * SCREEN_WIDTH + x) + 1] = color;
 }
+
+unsigned VGA_GetW() { return SCREEN_WIDTH; }
+unsigned VGA_GetH() { return SCREEN_HEIGHT; }
 
 char VGA_getchr(int x, int y)
 {
@@ -112,7 +120,6 @@ void VGA_putc(char c)
         g_ScreenX++;
         break;
     }
-
 
     if (g_ScreenX >= SCREEN_WIDTH)
     {

@@ -27,7 +27,10 @@ void debug_buffer(const char *msg, const void *buffer, uint32_t count);
 Keyboard_Key getkey(bool print, bool wait);
 const char *gets(uint8_t endCode, bool print);
 
+unsigned VGA_GetW();
+unsigned VGA_GetH();
 
+#define BLACK 0x00
 #define BLUE 0x01
 #define GREEN 0x02
 #define CYAN 0x03
